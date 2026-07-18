@@ -1,10 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Bell, PenLine, Search } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { useState, useRef, useEffect } from "react"
+import { Bell, LogOut, Search, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ShakaiLogo } from "@/components/shakai-logo"
+import { PostComposer } from "@/components/post-composer"
+import { Avatar } from "@/components/avatar"
+import { authClient } from "@/lib/auth-client"
 
 const NAV = [
   { href: "/feed", label: "フィード" },
@@ -13,6 +17,26 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+  const isAuthed = !!session?.user
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener("mousedown", onClick)
+    return () => document.removeEventListener("mousedown", onClick)
+  }, [])
+
+  async function onSignOut() {
+    await authClient.signOut()
+    setMenuOpen(false)
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
@@ -49,21 +73,65 @@ export function SiteHeader() {
           >
             <Search className="h-5 w-5" />
           </button>
-          <button
-            type="button"
-            aria-label="通知"
-            className="relative flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-          </button>
-          <button
-            type="button"
-            className="ml-1 inline-flex h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">投稿する</span>
-          </button>
+
+          {isAuthed && (
+            <button
+              type="button"
+              aria-label="通知"
+              className="relative flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+            </button>
+          )}
+
+          <div className="ml-1">
+            <PostComposer isAuthed={isAuthed} variant="header" />
+          </div>
+
+          {isPending ? null : isAuthed ? (
+            <div className="relative ml-1" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label="アカウントメニュー"
+                className="flex items-center rounded-full"
+              >
+                <Avatar name={session.user.name} className="h-9 w-9 text-xs" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-12 w-52 overflow-hidden rounded-2xl border border-border bg-card p-1.5 shadow-lg">
+                  <div className="px-3 py-2">
+                    <p className="truncate text-sm font-medium text-foreground">{session.user.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    <User className="h-4 w-4" />
+                    プロフィール
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={onSignOut}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    ログアウト
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="ml-1 inline-flex h-11 items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              ログイン
+            </Link>
+          )}
         </div>
       </div>
     </header>

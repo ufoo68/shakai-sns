@@ -2,7 +2,9 @@ import Link from "next/link"
 import { ArrowRight, MessagesSquare, Layers, BookOpen } from "lucide-react"
 import { ShakaiLogo } from "@/components/shakai-logo"
 import { PostCard } from "@/components/post-card"
-import { GENRES, posts } from "@/lib/data"
+import { GENRES } from "@/lib/data"
+import { getFeedPosts } from "@/lib/actions/posts"
+import { getOptionalUserId } from "@/lib/session"
 
 const VALUES = [
   {
@@ -22,7 +24,10 @@ const VALUES = [
   },
 ]
 
-export default function Page() {
+export default async function Page() {
+  const [posts, me] = await Promise.all([getFeedPosts(2), getOptionalUserId()])
+  const isAuthed = !!me
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* シンプルなトップバー */}
@@ -30,16 +35,16 @@ export default function Page() {
         <ShakaiLogo className="text-base" />
         <div className="flex items-center gap-2">
           <Link
-            href="/feed"
+            href={isAuthed ? "/feed" : "/sign-in"}
             className="hidden rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
           >
-            ログイン
+            {isAuthed ? "フィードへ" : "ログイン"}
           </Link>
           <Link
-            href="/feed"
+            href={isAuthed ? "/feed" : "/sign-up"}
             className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            はじめる
+            {isAuthed ? "はじめる" : "無料ではじめる"}
           </Link>
         </div>
       </header>
@@ -67,20 +72,17 @@ export default function Page() {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            href="/profile"
+            href={isAuthed ? "/profile" : "/sign-up"}
             className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border bg-card px-7 text-base font-medium text-foreground transition-colors hover:bg-muted sm:w-auto"
           >
-            プロフィールの例を見る
+            {isAuthed ? "プロフィールを見る" : "アカウントをつくる"}
           </Link>
         </div>
 
         {/* 扱うジャンル */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
           {GENRES.map((g) => (
-            <span
-              key={g}
-              className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground"
-            >
+            <span key={g} className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground">
               {g}
             </span>
           ))}
@@ -91,10 +93,7 @@ export default function Page() {
       <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
         <div className="grid gap-4 sm:grid-cols-3">
           {VALUES.map((v) => (
-            <div
-              key={v.title}
-              className="rounded-2xl border border-border bg-card p-6"
-            >
+            <div key={v.title} className="rounded-2xl border border-border bg-card p-6">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                 <v.icon className="h-5 w-5" />
               </span>
@@ -106,38 +105,36 @@ export default function Page() {
       </section>
 
       {/* フィードのプレビュー */}
-      <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6">
-        <div className="mb-5 text-center">
-          <h2 className="font-display text-2xl font-bold tracking-tight">
-            こんな投稿が生まれています
-          </h2>
-          <p className="mt-2 leading-relaxed text-muted-foreground">
-            落ち着いたトーンで、じっくり考えたことを共有できます。
-          </p>
-        </div>
-        <div className="flex flex-col gap-4">
-          {posts.slice(0, 2).map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <Link
-            href="/feed"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-opacity hover:opacity-80"
-          >
-            すべてのフィードを見る
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
+      {posts.length > 0 && (
+        <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6">
+          <div className="mb-5 text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight">こんな投稿が生まれています</h2>
+            <p className="mt-2 leading-relaxed text-muted-foreground">
+              落ち着いたトーンで、じっくり考えたことを共有できます。
+            </p>
+          </div>
+          <div className="flex flex-col gap-4">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} isAuthed={isAuthed} />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/feed"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-opacity hover:opacity-80"
+            >
+              すべてのフィードを見る
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* フッター */}
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-4 py-8 sm:flex-row sm:px-6">
           <ShakaiLogo className="text-sm" />
-          <p className="text-sm text-muted-foreground">
-            社会について、安心して話せる場所を。
-          </p>
+          <p className="text-sm text-muted-foreground">社会について、安心して話せる場所を。</p>
         </div>
       </footer>
     </div>

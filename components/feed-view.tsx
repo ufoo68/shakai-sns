@@ -3,15 +3,14 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { PostCard } from "@/components/post-card"
-import { GENRES, posts, type Genre } from "@/lib/data"
+import { GENRES, type PostView } from "@/lib/data"
 
 const FILTERS = ["すべて", ...GENRES] as const
 
-export function FeedView() {
+export function FeedView({ posts, isAuthed }: { posts: PostView[]; isAuthed: boolean }) {
   const [active, setActive] = useState<(typeof FILTERS)[number]>("すべて")
 
-  const filtered =
-    active === "すべて" ? posts : posts.filter((p) => p.genre === (active as Genre))
+  const filtered = active === "すべて" ? posts : posts.filter((p) => p.genre === active)
 
   return (
     <div>
@@ -38,11 +37,13 @@ export function FeedView() {
 
       <div className="mt-4 flex flex-col gap-4">
         {filtered.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} isAuthed={isAuthed} />
         ))}
         {filtered.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">
-            このジャンルの投稿はまだありません。
+            {active === "すべて"
+              ? "まだ投稿がありません。最初の考えを共有してみましょう。"
+              : "このジャンルの投稿はまだありません。"}
           </p>
         )}
       </div>
