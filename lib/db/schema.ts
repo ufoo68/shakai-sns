@@ -9,6 +9,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull().default(false),
   image: text("image"),
+  // "user" | "admin" — 管理画面へのアクセス権を制御する
+  role: text("role").notNull().default("user"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
@@ -129,5 +131,28 @@ export const notifications = pgTable("notifications", {
   type: text("type").notNull(), // "empathy" | "comment" | "follow"
   postId: integer("postId"), // フォロー通知では null
   read: boolean("read").notNull().default(false),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
+// 通報: ユーザーが不適切な投稿を報告する
+export const reports = pgTable("reports", {
+  id: serial("id").primaryKey(),
+  reporterId: text("reporterId").notNull(), // 通報した人
+  postId: integer("postId").notNull(), // 対象の投稿
+  reason: text("reason").notNull(), // 分類 (スパム/誹謗中傷 など)
+  detail: text("detail").notNull().default(""), // 補足
+  status: text("status").notNull().default("open"), // "open" | "resolved" | "dismissed"
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
+// 問い合わせ: 運営への連絡フォーム
+export const inquiries = pgTable("inquiries", {
+  id: serial("id").primaryKey(),
+  userId: text("userId"), // 送信者(ログインしていれば)。未ログインは null
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  category: text("category").notNull().default("その他"),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("open"), // "open" | "resolved"
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })

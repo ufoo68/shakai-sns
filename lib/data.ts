@@ -55,6 +55,64 @@ export type BookView = {
   note: string | null
 }
 
+// --- 管理画面用の型と定義 --------------------------------------------------
+
+// 通報理由の分類
+export const REPORT_REASONS = ["スパム・宣伝", "誹謗中傷・嫌がらせ", "誤情報", "その他"] as const
+export type ReportReason = (typeof REPORT_REASONS)[number]
+
+// 問い合わせの分類
+export const INQUIRY_CATEGORIES = ["不具合の報告", "機能の要望", "アカウントについて", "その他"] as const
+export type InquiryCategory = (typeof INQUIRY_CATEGORIES)[number]
+
+export type AdminUserView = {
+  id: string
+  name: string
+  email: string
+  handle: string
+  role: string
+  postCount: number
+  createdAt: string
+  isMe: boolean
+}
+
+export type ReportView = {
+  id: number
+  reason: string
+  detail: string
+  status: string
+  createdAt: string
+  reporter: { name: string; handle: string }
+  post: {
+    id: number
+    title: string
+    excerpt: string
+    author: { id: string; name: string; handle: string }
+  } | null
+}
+
+export type InquiryView = {
+  id: number
+  name: string
+  email: string
+  category: string
+  message: string
+  status: string
+  createdAt: string
+}
+
+export type AdminPostView = {
+  id: number
+  title: string
+  excerpt: string
+  genre: string
+  createdAt: string
+  author: { id: string; name: string; handle: string }
+  empathy: number
+  comments: number
+  reportCount: number
+}
+
 // ジャンルごとの淡い色付け(トークンベースの控えめな配色)
 export const genreTint: Record<string, string> = {
   政治: "bg-accent text-accent-foreground",
