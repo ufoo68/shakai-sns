@@ -3,10 +3,11 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { Bell, LogOut, Search, User } from "lucide-react"
+import { LogOut, Search, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ShakaiLogo } from "@/components/shakai-logo"
 import { PostComposer } from "@/components/post-composer"
+import { NotificationBell } from "@/components/notification-bell"
 import { Avatar } from "@/components/avatar"
 import { authClient } from "@/lib/auth-client"
 
@@ -66,24 +67,15 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <button
-            type="button"
+          <Link
+            href="/search"
             aria-label="探す"
             className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Search className="h-5 w-5" />
-          </button>
+          </Link>
 
-          {isAuthed && (
-            <button
-              type="button"
-              aria-label="通知"
-              className="relative flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-            </button>
-          )}
+          {isAuthed && <NotificationBell />}
 
           <div className="ml-1">
             <PostComposer isAuthed={isAuthed} variant="header" />

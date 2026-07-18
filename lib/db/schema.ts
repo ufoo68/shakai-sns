@@ -119,3 +119,15 @@ export const books = pgTable("books", {
   note: text("note"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })
+
+// 通知: 自分の投稿への共感・コメント、自分へのフォロー
+// userId = 通知の受信者, actorId = 行動した人
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: text("userId").notNull(), // 受信者
+  actorId: text("actorId").notNull(), // 通知のきっかけを作った人
+  type: text("type").notNull(), // "empathy" | "comment" | "follow"
+  postId: integer("postId"), // フォロー通知では null
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
