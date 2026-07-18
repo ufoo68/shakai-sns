@@ -109,8 +109,8 @@ export function PostComposer({
             if (e.target === e.currentTarget) setOpen(false)
           }}
         >
-          <div className="max-h-[92svh] w-full max-w-xl overflow-y-auto rounded-t-3xl border border-border bg-card p-5 sm:rounded-3xl sm:p-6">
-            <div className="flex items-center justify-between">
+          <div className="flex max-h-[92svh] w-full max-w-xl flex-col rounded-t-3xl border border-border bg-card sm:rounded-3xl">
+            <div className="flex shrink-0 items-center justify-between p-5 pb-3 sm:p-6 sm:pb-3">
               <h2 className="font-display text-lg font-bold text-foreground">投稿を書く</h2>
               <button
                 type="button"
@@ -122,7 +122,8 @@ export function PostComposer({
               </button>
             </div>
 
-            <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-4">
+            <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-4 sm:px-6">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Field label="ジャンル">
                   <select value={genre} onChange={(e) => setGenre(e.target.value)} className={selectClass}>
@@ -178,8 +179,9 @@ export function PostComposer({
                   {error}
                 </p>
               )}
+              </div>
 
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4 sm:px-6">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
