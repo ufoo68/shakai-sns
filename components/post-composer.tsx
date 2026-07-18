@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { PenLine, X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,8 +29,21 @@ export function PostComposer({
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => setMounted(true), [])
+
+  // ダイアログ表示中は背後のフィードがスクロールしないようにする
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
 
   const [genre, setGenre] = useState<string>(GENRES[3])
   const [division, setDivision] = useState<string>(DIVISIONS[0])
@@ -83,10 +97,12 @@ export function PostComposer({
         </button>
       )}
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-          role="dialog"
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-foreground/20 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+            role="dialog"
           aria-modal="true"
           aria-label="新しい投稿"
           onClick={(e) => {
@@ -184,8 +200,9 @@ export function PostComposer({
               </div>
             </form>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   )
 }
