@@ -12,6 +12,10 @@ export type Division = (typeof DIVISIONS)[number]
 export const FORMS = ["短文", "長文", "書評", "引用"] as const
 export type Form = (typeof FORMS)[number]
 
+// 本棚の読書状態
+export const BOOK_STATUSES = ["読んだ", "読んでいる", "読みたい"] as const
+export type BookStatus = (typeof BOOK_STATUSES)[number]
+
 // フィード等で使う整形済み投稿データ
 export type PostView = {
   id: number

@@ -1,8 +1,35 @@
 import { betterAuth } from "better-auth"
-import { pool } from "@/lib/db"
+import { pool, db } from "@/lib/db"
+import { profiles } from "@/lib/db/schema"
+
+// メールアドレスから初期ハンドルを生成する
+function handleFromEmail(email: string) {
+  const base = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user"
+  const suffix = Math.random().toString(36).slice(2, 6)
+  return `${base}_${suffix}`.slice(0, 24)
+}
 
 export const auth = betterAuth({
   database: pool,
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (createdUser) => {
+          // サインアップ時に知的背景プロフィールの土台を作る
+          await db
+            .insert(profiles)
+            .values({
+              userId: createdUser.id,
+              handle: handleFromEmail(createdUser.email),
+              bio: "",
+              currentThought: "",
+              interests: [],
+            })
+            .onConflictDoNothing()
+        },
+      },
+    },
+  },
   baseURL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL

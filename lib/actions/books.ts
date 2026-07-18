@@ -1,0 +1,52 @@
+"use server"
+
+import { db } from "@/lib/db"
+import { books } from "@/lib/db/schema"
+import { and, desc, eq } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
+import { getUserId } from "@/lib/session"
+import { BOOK_STATUSES, type BookView } from "@/lib/data"
+
+export async function getBooksByUser(userId: string): Promise<BookView[]> {
+  const rows = await db
+    .select()
+    .from(books)
+    .where(eq(books.userId, userId))
+    .orderBy(desc(books.createdAt))
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    author: r.author,
+    status: r.status,
+    note: r.note,
+  }))
+}
+
+export async function addBook(input: {
+  title: string
+  author: string
+  status: string
+  note?: string
+}) {
+  const userId = await getUserId()
+  const title = input.title.trim()
+  const author = input.author.trim()
+  if (!title) return
+  const status = BOOK_STATUSES.includes(input.status as (typeof BOOK_STATUSES)[number])
+    ? input.status
+    : "読んだ"
+  await db.insert(books).values({
+    userId,
+    title,
+    author: author || "著者不明",
+    status,
+    note: input.note?.trim() || null,
+  })
+  revalidatePath("/profile")
+}
+
+export async function deleteBook(id: number) {
+  const userId = await getUserId()
+  await db.delete(books).where(and(eq(books.id, id), eq(books.userId, userId)))
+  revalidatePath("/profile")
+}
