@@ -1,47 +1,145 @@
+import Link from "next/link"
+import { ArrowRight, MessagesSquare, Layers, BookOpen } from "lucide-react"
+import { ShakaiLogo } from "@/components/shakai-logo"
+import { PostCard } from "@/components/post-card"
+import { GENRES, posts } from "@/lib/data"
+
+const VALUES = [
+  {
+    icon: Layers,
+    title: "多様な視点を並べる",
+    body: "答えをひとつに決めるためではなく、違う見方を隣に置くための場所です。",
+  },
+  {
+    icon: MessagesSquare,
+    title: "建設的に対話する",
+    body: "否定や勝ち負けではなく、理解を深めるためのやりとりを大切にします。",
+  },
+  {
+    icon: BookOpen,
+    title: "知的な背景を共有する",
+    body: "何を読み、何を考えてきたか。その人の視点の土台がゆるやかに伝わります。",
+  },
+]
+
 export default function Page() {
   return (
-    <main
-      style={{
-        colorScheme: 'light dark',
-        position: 'relative',
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'light-dark(#fff, #000)',
-        color: 'light-dark(#000, #fff)',
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        style={{ width: 80, height: 80 }}
-        width={80}
-        height={80}
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: 'calc(50% + 56px)',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'light-dark(#71717a, #a1a1aa)',
-        }}
-      >
-        Your v0 generation will show here.
-      </p>
-    </main>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* シンプルなトップバー */}
+      <header className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+        <ShakaiLogo className="text-base" />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/feed"
+            className="hidden rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          >
+            ログイン
+          </Link>
+          <Link
+            href="/feed"
+            className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            はじめる
+          </Link>
+        </div>
+      </header>
+
+      {/* ヒーロー */}
+      <section className="mx-auto max-w-3xl px-4 pb-8 pt-16 text-center sm:px-6 sm:pt-24">
+        <ShakaiLogo className="justify-center text-4xl sm:text-5xl" />
+        <h1 className="mt-8 text-balance font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+          社会について考え、語り合う
+        </h1>
+        <p className="mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
+          あなたの視点が、誰かの視野を広げる。
+        </p>
+        <p className="mx-auto mt-6 max-w-xl text-pretty leading-relaxed text-muted-foreground">
+          shakai は、歴史・政治・経済・社会などについて、学んだことや考えたことを共有し、
+          多様な視点から対話するためのSNSです。
+        </p>
+
+        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/feed"
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-7 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto"
+          >
+            フィードを見る
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/profile"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border bg-card px-7 text-base font-medium text-foreground transition-colors hover:bg-muted sm:w-auto"
+          >
+            プロフィールの例を見る
+          </Link>
+        </div>
+
+        {/* 扱うジャンル */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+          {GENRES.map((g) => (
+            <span
+              key={g}
+              className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground"
+            >
+              {g}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* 3つの価値 */}
+      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {VALUES.map((v) => (
+            <div
+              key={v.title}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+                <v.icon className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-base font-bold text-foreground">{v.title}</h3>
+              <p className="mt-2 leading-relaxed text-muted-foreground">{v.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* フィードのプレビュー */}
+      <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6">
+        <div className="mb-5 text-center">
+          <h2 className="font-display text-2xl font-bold tracking-tight">
+            こんな投稿が生まれています
+          </h2>
+          <p className="mt-2 leading-relaxed text-muted-foreground">
+            落ち着いたトーンで、じっくり考えたことを共有できます。
+          </p>
+        </div>
+        <div className="flex flex-col gap-4">
+          {posts.slice(0, 2).map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
+        <div className="mt-8 text-center">
+          <Link
+            href="/feed"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-opacity hover:opacity-80"
+          >
+            すべてのフィードを見る
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* フッター */}
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-4 py-8 sm:flex-row sm:px-6">
+          <ShakaiLogo className="text-sm" />
+          <p className="text-sm text-muted-foreground">
+            社会について、安心して話せる場所を。
+          </p>
+        </div>
+      </footer>
+    </div>
   )
 }

@@ -1,0 +1,16 @@
+{
+  "name": "shakai — 社会について考え、語り合う",
+  "short_name": "shakai",
+  "description": "歴史・政治・経済・社会などについて、学んだことや考えたことを共有し、多様な視点から対話するためのSNSです。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
