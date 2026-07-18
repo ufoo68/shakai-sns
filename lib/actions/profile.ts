@@ -6,6 +6,7 @@ import { and, desc, eq, ne, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
 import { GENRES, type ProfileView } from "@/lib/data"
+import { createNotification, removeNotification } from "@/lib/actions/notifications"
 
 async function counts(userId: string) {
   const [postRows, followingRows, followerRows] = await Promise.all([
@@ -122,8 +123,10 @@ export async function toggleFollow(targetUserId: string) {
     .limit(1)
   if (existing.length > 0) {
     await db.delete(follows).where(and(eq(follows.userId, userId), eq(follows.followingId, targetUserId)))
+    await removeNotification({ recipientId: targetUserId, actorId: userId, type: "follow" })
   } else {
     await db.insert(follows).values({ userId, followingId: targetUserId })
+    await createNotification({ recipientId: targetUserId, actorId: userId, type: "follow" })
   }
   revalidatePath("/feed")
   revalidatePath("/profile")
