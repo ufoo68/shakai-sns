@@ -2,6 +2,9 @@ import { betterAuth } from "better-auth"
 import { pool, db } from "@/lib/db"
 import { profiles } from "@/lib/db/schema"
 
+// 本番のカスタムドメイン（セッションクッキーの発行元として信頼する）
+const CUSTOM_DOMAIN = "https://shakai.ufoo68.com"
+
 // メールアドレスから初期ハンドルを生成する
 function handleFromEmail(email: string) {
   const base = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user"
@@ -32,16 +35,20 @@ export const auth = betterAuth({
   },
   baseURL:
     process.env.BETTER_AUTH_URL ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.V0_RUNTIME_URL),
+    // 本番デプロイではカスタムドメインを優先する
+    (process.env.NODE_ENV === "production"
+      ? CUSTOM_DOMAIN
+      : process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.V0_RUNTIME_URL),
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
   },
   trustedOrigins: [
+    CUSTOM_DOMAIN,
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
     ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
