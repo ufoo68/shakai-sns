@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useTransition, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Search as SearchIcon, X } from "lucide-react"
+import { ArrowLeft, Search as SearchIcon, X } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { PostCard } from "@/components/post-card"
 import { search, type SearchResult } from "@/lib/actions/search"
@@ -73,6 +73,13 @@ export function SearchView({ isAuthed }: { isAuthed: boolean }) {
 
   return (
     <div>
+      <Link
+        href="/feed"
+        className="-ml-2 mb-3 inline-flex h-11 items-center gap-1.5 rounded-full px-2 pr-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        フィードに戻る
+      </Link>
       <h1 className="text-2xl font-bold tracking-tight text-foreground">探す</h1>
       <p className="mt-1 text-muted-foreground text-pretty">投稿や、考えている人を見つける。</p>
 
