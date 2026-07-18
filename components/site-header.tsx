@@ -3,13 +3,14 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { LogOut, Search, User } from "lucide-react"
+import { LogOut, Search, Shield, LifeBuoy, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ShakaiLogo } from "@/components/shakai-logo"
 import { PostComposer } from "@/components/post-composer"
 import { NotificationBell } from "@/components/notification-bell"
 import { Avatar } from "@/components/avatar"
 import { authClient } from "@/lib/auth-client"
+import { getMyIsAdmin } from "@/lib/actions/account"
 
 const NAV = [
   { href: "/feed", label: "フィード" },
@@ -22,6 +23,7 @@ export function SiteHeader() {
   const { data: session, isPending } = authClient.useSession()
   const isAuthed = !!session?.user
   const [menuOpen, setMenuOpen] = useState(false)
+  const [admin, setAdmin] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -31,6 +33,21 @@ export function SiteHeader() {
     document.addEventListener("mousedown", onClick)
     return () => document.removeEventListener("mousedown", onClick)
   }, [])
+
+  // ログイン済みユーザーが管理者かどうかを取得し、管理メニューの表示を制御する
+  useEffect(() => {
+    if (!isAuthed) {
+      setAdmin(false)
+      return
+    }
+    let active = true
+    getMyIsAdmin().then((v) => {
+      if (active) setAdmin(v)
+    })
+    return () => {
+      active = false
+    }
+  }, [isAuthed])
 
   async function onSignOut() {
     await authClient.signOut()
@@ -105,6 +122,28 @@ export function SiteHeader() {
                     <User className="h-4 w-4" />
                     プロフィール
                   </Link>
+                  <Link
+                    href="/contact"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    <LifeBuoy className="h-4 w-4" />
+                    お問い合わせ
+                  </Link>
+                  {admin && (
+                    <>
+                      <div className="my-1 border-t border-border" />
+                      <Link
+                        href="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
+                      >
+                        <Shield className="h-4 w-4" />
+                        管理メニュー
+                      </Link>
+                    </>
+                  )}
+                  <div className="my-1 border-t border-border" />
                   <button
                     type="button"
                     onClick={onSignOut}

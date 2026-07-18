@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Bookmark, Heart, MessageCircle, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/avatar"
+import { ReportButton } from "@/components/report-button"
 import { genreTintOf, type PostView } from "@/lib/data"
 import { toggleEmpathy, toggleBookmark, getComments, addComment, type CommentView } from "@/lib/actions/interactions"
 
@@ -107,6 +108,9 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
             <span className="truncate text-muted-foreground">@{post.author.handle}</span>
           </div>
           <time className="text-xs text-muted-foreground">{post.createdAt}</time>
+        </div>
+        <div className="ml-auto shrink-0">
+          <ReportButton postId={post.id} isAuthed={isAuthed} />
         </div>
       </div>
 
