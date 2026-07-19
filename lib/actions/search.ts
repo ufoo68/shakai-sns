@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { posts, empathies, comments, bookmarks, profiles, user, follows } from "@/lib/db/schema"
-import { desc, eq, ilike, inArray, or } from "drizzle-orm"
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm"
 import { getOptionalUserId } from "@/lib/session"
 import { formatRelative } from "@/lib/format"
 import type { PostView } from "@/lib/data"
@@ -41,7 +41,7 @@ export async function search(query: string): Promise<SearchResult> {
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
-    .where(or(ilike(posts.title, like), ilike(posts.body, like)))
+    .where(and(or(ilike(posts.title, like), ilike(posts.body, like)), eq(user.status, "active")))
     .orderBy(desc(posts.createdAt))
     .limit(30)
 
@@ -57,7 +57,7 @@ export async function search(query: string): Promise<SearchResult> {
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(or(ilike(user.name, like), ilike(profiles.handle, like), ilike(profiles.bio, like)))
+    .where(and(or(ilike(user.name, like), ilike(profiles.handle, like), ilike(profiles.bio, like)), eq(user.status, "active")))
     .limit(20)
 
   let myFollows = new Set<string>()
@@ -97,9 +97,21 @@ async function buildPostViews(
   const ids = rows.map((r) => r.id)
 
   const [emp, com, bmk] = await Promise.all([
-    db.select({ postId: empathies.postId, userId: empathies.userId }).from(empathies).where(inArray(empathies.postId, ids)),
-    db.select({ postId: comments.postId }).from(comments).where(inArray(comments.postId, ids)),
-    db.select({ postId: bookmarks.postId, userId: bookmarks.userId }).from(bookmarks).where(inArray(bookmarks.postId, ids)),
+    db
+      .select({ postId: empathies.postId, userId: empathies.userId })
+      .from(empathies)
+      .leftJoin(user, eq(empathies.userId, user.id))
+      .where(and(inArray(empathies.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: comments.postId })
+      .from(comments)
+      .leftJoin(user, eq(comments.userId, user.id))
+      .where(and(inArray(comments.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: bookmarks.postId, userId: bookmarks.userId })
+      .from(bookmarks)
+      .leftJoin(user, eq(bookmarks.userId, user.id))
+      .where(and(inArray(bookmarks.postId, ids), eq(user.status, "active"))),
   ])
 
   const empCount = new Map<number, number>()

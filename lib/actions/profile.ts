@@ -33,7 +33,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(eq(profiles.handle, handle))
+    .where(and(eq(profiles.handle, handle), eq(user.status, "active")))
     .limit(1)
 
   const row = rows[0]
@@ -55,7 +55,7 @@ export async function getMyProfile(): Promise<ProfileView | null> {
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(eq(profiles.userId, me))
+    .where(and(eq(profiles.userId, me), eq(user.status, "active")))
     .limit(1)
   const row = rows[0]
   if (!row) return null
@@ -151,7 +151,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(me ? ne(profiles.userId, me) : sql`true`)
+    .where(and(me ? ne(profiles.userId, me) : sql`true`, eq(user.status, "active")))
     .orderBy(desc(profiles.createdAt))
     .limit(limit)
 

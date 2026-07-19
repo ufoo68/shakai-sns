@@ -76,7 +76,7 @@ export async function getComments(postId: number): Promise<CommentView[]> {
     .from(comments)
     .leftJoin(user, eq(comments.userId, user.id))
     .leftJoin(profiles, eq(comments.userId, profiles.userId))
-    .where(eq(comments.postId, postId))
+    .where(and(eq(comments.postId, postId), eq(user.status, "active")))
     .orderBy(desc(comments.createdAt))
 
   return rows.map((r) => ({

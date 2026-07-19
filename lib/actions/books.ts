@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { books } from "@/lib/db/schema"
+import { books, user } from "@/lib/db/schema"
 import { and, desc, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "@/lib/session"
@@ -11,14 +11,15 @@ export async function getBooksByUser(userId: string): Promise<BookView[]> {
   const rows = await db
     .select()
     .from(books)
-    .where(eq(books.userId, userId))
+    .leftJoin(user, eq(books.userId, user.id))
+    .where(and(eq(books.userId, userId), eq(user.status, "active")))
     .orderBy(desc(books.createdAt))
   return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    author: r.author,
-    status: r.status,
-    note: r.note,
+    id: r.books.id,
+    title: r.books.title,
+    author: r.books.author,
+    status: r.books.status,
+    note: r.books.note,
   }))
 }
 

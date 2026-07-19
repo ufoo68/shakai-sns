@@ -33,9 +33,21 @@ async function toPostViews(
   const ids = rows.map((r) => r.id)
 
   const [emp, com, bmk] = await Promise.all([
-    db.select({ postId: empathies.postId, userId: empathies.userId }).from(empathies).where(inArray(empathies.postId, ids)),
-    db.select({ postId: comments.postId }).from(comments).where(inArray(comments.postId, ids)),
-    db.select({ postId: bookmarks.postId, userId: bookmarks.userId }).from(bookmarks).where(inArray(bookmarks.postId, ids)),
+    db
+      .select({ postId: empathies.postId, userId: empathies.userId })
+      .from(empathies)
+      .leftJoin(user, eq(empathies.userId, user.id))
+      .where(and(inArray(empathies.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: comments.postId })
+      .from(comments)
+      .leftJoin(user, eq(comments.userId, user.id))
+      .where(and(inArray(comments.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: bookmarks.postId, userId: bookmarks.userId })
+      .from(bookmarks)
+      .leftJoin(user, eq(bookmarks.userId, user.id))
+      .where(and(inArray(bookmarks.postId, ids), eq(user.status, "active"))),
   ])
 
   const empCount = new Map<number, number>()
@@ -95,6 +107,7 @@ export async function getFeedPosts(limit = 50): Promise<PostView[]> {
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
+    .where(eq(user.status, "active"))
     .orderBy(desc(posts.createdAt))
     .limit(limit)
   return toPostViews(rows)
@@ -106,7 +119,7 @@ export async function getPostsByUser(userId: string): Promise<PostView[]> {
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
-    .where(eq(posts.userId, userId))
+    .where(and(eq(posts.userId, userId), eq(user.status, "active")))
     .orderBy(desc(posts.createdAt))
   return toPostViews(rows)
 }
@@ -121,7 +134,7 @@ export async function getBookmarkedPosts(): Promise<PostView[]> {
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
-    .where(inArray(posts.id, ids))
+    .where(and(inArray(posts.id, ids), eq(user.status, "active")))
     .orderBy(desc(posts.createdAt))
   return toPostViews(rows)
 }

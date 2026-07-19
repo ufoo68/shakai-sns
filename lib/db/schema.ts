@@ -11,6 +11,8 @@ export const user = pgTable("user", {
   image: text("image"),
   // "user" | "admin" — 管理画面へのアクセス権を制御する
   role: text("role").notNull().default("user"),
+  // "active" | "frozen" — 凍結ユーザーは投稿・反応などの操作と公開表示から除外する
+  status: text("status").notNull().default("active"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })

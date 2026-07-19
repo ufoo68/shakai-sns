@@ -72,6 +72,7 @@ export type AdminUserView = {
   email: string
   handle: string
   role: string
+  status: string
   postCount: number
   createdAt: string
   isMe: boolean
