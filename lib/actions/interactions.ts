@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { empathies, bookmarks, comments, posts, profiles, user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "@/lib/session"
@@ -65,6 +66,7 @@ export type CommentView = {
 }
 
 export async function getComments(postId: number): Promise<CommentView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       id: comments.id,
@@ -76,7 +78,7 @@ export async function getComments(postId: number): Promise<CommentView[]> {
     .from(comments)
     .leftJoin(user, eq(comments.userId, user.id))
     .leftJoin(profiles, eq(comments.userId, profiles.userId))
-    .where(eq(comments.postId, postId))
+    .where(and(eq(comments.postId, postId), eq(user.status, "active")))
     .orderBy(desc(comments.createdAt))
 
   return rows.map((r) => ({

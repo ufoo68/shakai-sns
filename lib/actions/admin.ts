@@ -1,8 +1,22 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { posts, empathies, comments, profiles, user, reports, inquiries } from "@/lib/db/schema"
-import { desc, eq, inArray, sql } from "drizzle-orm"
+import {
+  account,
+  bookmarks,
+  books,
+  comments,
+  empathies,
+  follows,
+  inquiries,
+  notifications,
+  posts,
+  profiles,
+  reports,
+  session,
+  user,
+} from "@/lib/db/schema"
+import { desc, eq, inArray, or, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/session"
 import { formatRelative } from "@/lib/format"
@@ -41,6 +55,7 @@ export async function getAdminUsers(): Promise<AdminUserView[]> {
       name: user.name,
       email: user.email,
       role: user.role,
+      status: user.status,
       createdAt: user.createdAt,
       handle: profiles.handle,
       postCount: sql<number>`(select count(*)::int from ${posts} where ${posts.userId} = ${user.id})`,
@@ -55,6 +70,7 @@ export async function getAdminUsers(): Promise<AdminUserView[]> {
     email: r.email,
     handle: r.handle ?? "unknown",
     role: r.role,
+    status: r.status,
     postCount: r.postCount ?? 0,
     createdAt: formatRelative(r.createdAt),
     isMe: r.id === me,
@@ -67,6 +83,63 @@ export async function setUserRole(userId: string, role: "user" | "admin") {
   if (userId === me) throw new Error("自分自身の権限は変更できません。")
   await db.update(user).set({ role }).where(eq(user.id, userId))
   revalidatePath("/admin/users")
+}
+
+// ユーザー凍結/解除(自分自身は変更不可)。凍結時は既存セッションを失効させる。
+export async function setUserStatus(userId: string, status: "active" | "frozen") {
+  const me = await requireAdmin()
+  if (userId === me) throw new Error("自分自身は凍結できません。")
+  await db.transaction(async (tx) => {
+    await tx.update(user).set({ status, updatedAt: new Date() }).where(eq(user.id, userId))
+    if (status === "frozen") {
+      await tx.delete(session).where(eq(session.userId, userId))
+    }
+  })
+  revalidatePath("/")
+  revalidatePath("/admin/users")
+  revalidatePath("/feed")
+  revalidatePath("/search")
+}
+
+// ユーザーを削除。投稿と反応・フォロー・通知などの手動関連データを整合的に掃除する。
+export async function adminDeleteUser(userId: string) {
+  const me = await requireAdmin()
+  if (userId === me) throw new Error("自分自身は削除できません。")
+
+  await db.transaction(async (tx) => {
+    const ownedPosts = await tx.select({ id: posts.id }).from(posts).where(eq(posts.userId, userId))
+    const postIds = ownedPosts.map((p) => p.id)
+
+    if (postIds.length > 0) {
+      await tx.delete(empathies).where(inArray(empathies.postId, postIds))
+      await tx.delete(comments).where(inArray(comments.postId, postIds))
+      await tx.delete(bookmarks).where(inArray(bookmarks.postId, postIds))
+      await tx.delete(reports).where(inArray(reports.postId, postIds))
+      await tx.delete(notifications).where(inArray(notifications.postId, postIds))
+      await tx.delete(posts).where(inArray(posts.id, postIds))
+    }
+
+    await tx.delete(empathies).where(eq(empathies.userId, userId))
+    await tx.delete(comments).where(eq(comments.userId, userId))
+    await tx.delete(bookmarks).where(eq(bookmarks.userId, userId))
+    await tx.delete(follows).where(or(eq(follows.userId, userId), eq(follows.followingId, userId)))
+    await tx.delete(notifications).where(or(eq(notifications.userId, userId), eq(notifications.actorId, userId)))
+    await tx.delete(reports).where(eq(reports.reporterId, userId))
+    await tx.update(inquiries).set({ userId: null }).where(eq(inquiries.userId, userId))
+    await tx.delete(books).where(eq(books.userId, userId))
+    await tx.delete(profiles).where(eq(profiles.userId, userId))
+    await tx.delete(session).where(eq(session.userId, userId))
+    await tx.delete(account).where(eq(account.userId, userId))
+    await tx.delete(user).where(eq(user.id, userId))
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  revalidatePath("/admin/users")
+  revalidatePath("/admin/posts")
+  revalidatePath("/admin/reports")
+  revalidatePath("/feed")
+  revalidatePath("/search")
 }
 
 // --- 通報一覧 ---------------------------------------------------------------
@@ -208,10 +281,14 @@ export async function getAdminPosts(): Promise<AdminPostView[]> {
 // 投稿を削除(管理者は誰の投稿でも削除可)。関連データも掃除する。
 export async function adminDeletePost(id: number) {
   await requireAdmin()
-  await db.delete(empathies).where(eq(empathies.postId, id))
-  await db.delete(comments).where(eq(comments.postId, id))
-  await db.delete(reports).where(eq(reports.postId, id))
-  await db.delete(posts).where(eq(posts.id, id))
+  await db.transaction(async (tx) => {
+    await tx.delete(empathies).where(eq(empathies.postId, id))
+    await tx.delete(comments).where(eq(comments.postId, id))
+    await tx.delete(bookmarks).where(eq(bookmarks.postId, id))
+    await tx.delete(reports).where(eq(reports.postId, id))
+    await tx.delete(notifications).where(eq(notifications.postId, id))
+    await tx.delete(posts).where(eq(posts.id, id))
+  })
   revalidatePath("/admin/posts")
   revalidatePath("/admin/reports")
   revalidatePath("/feed")

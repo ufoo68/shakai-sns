@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { profiles, posts, follows, user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq, ne, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
@@ -9,10 +10,23 @@ import { GENRES, type ProfileView } from "@/lib/data"
 import { createNotification, removeNotification } from "@/lib/actions/notifications"
 
 async function counts(userId: string) {
+  await ensureUserStatusColumn()
   const [postRows, followingRows, followerRows] = await Promise.all([
-    db.select({ id: posts.id }).from(posts).where(eq(posts.userId, userId)),
-    db.select({ id: follows.id }).from(follows).where(eq(follows.userId, userId)),
-    db.select({ id: follows.id }).from(follows).where(eq(follows.followingId, userId)),
+    db
+      .select({ id: posts.id })
+      .from(posts)
+      .leftJoin(user, eq(posts.userId, user.id))
+      .where(and(eq(posts.userId, userId), eq(user.status, "active"))),
+    db
+      .select({ id: follows.id })
+      .from(follows)
+      .leftJoin(user, eq(follows.followingId, user.id))
+      .where(and(eq(follows.userId, userId), eq(user.status, "active"))),
+    db
+      .select({ id: follows.id })
+      .from(follows)
+      .leftJoin(user, eq(follows.userId, user.id))
+      .where(and(eq(follows.followingId, userId), eq(user.status, "active"))),
   ])
   return {
     postCount: postRows.length,
@@ -22,6 +36,7 @@ async function counts(userId: string) {
 }
 
 export async function getProfileByHandle(handle: string): Promise<ProfileView | null> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,
@@ -33,7 +48,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(eq(profiles.handle, handle))
+    .where(and(eq(profiles.handle, handle), eq(user.status, "active")))
     .limit(1)
 
   const row = rows[0]
@@ -44,6 +59,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
 export async function getMyProfile(): Promise<ProfileView | null> {
   const me = await getOptionalUserId()
   if (!me) return null
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,
@@ -55,7 +71,7 @@ export async function getMyProfile(): Promise<ProfileView | null> {
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(eq(profiles.userId, me))
+    .where(and(eq(profiles.userId, me), eq(user.status, "active")))
     .limit(1)
   const row = rows[0]
   if (!row) return null
@@ -77,7 +93,8 @@ async function buildProfileView(row: {
     const f = await db
       .select({ id: follows.id })
       .from(follows)
-      .where(and(eq(follows.userId, me), eq(follows.followingId, row.userId)))
+      .leftJoin(user, eq(follows.userId, user.id))
+      .where(and(eq(follows.userId, me), eq(follows.followingId, row.userId), eq(user.status, "active")))
       .limit(1)
     followedByMe = f.length > 0
   }
@@ -142,6 +159,7 @@ export type SuggestedUser = {
 
 export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
   const me = await getOptionalUserId()
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,
@@ -151,7 +169,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
     })
     .from(profiles)
     .leftJoin(user, eq(profiles.userId, user.id))
-    .where(me ? ne(profiles.userId, me) : sql`true`)
+    .where(and(me ? ne(profiles.userId, me) : sql`true`, eq(user.status, "active")))
     .orderBy(desc(profiles.createdAt))
     .limit(limit)
 
