@@ -17,5 +17,5 @@ export default async function ProfilePage() {
     getBooksByUser(profile.userId),
   ])
 
-  return <ProfileScreen profile={profile} posts={posts} books={books} isAuthed />
+  return <ProfileScreen profile={profile} posts={posts} books={books} isAuthed currentUserId={session.user.id} />
 }

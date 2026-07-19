@@ -21,5 +21,5 @@ export default async function UserProfilePage({
   ])
 
   // 自分自身のハンドルなら /profile に相当する編集可能ビューになる
-  return <ProfileScreen profile={profile} posts={posts} books={books} isAuthed={!!me} />
+  return <ProfileScreen profile={profile} posts={posts} books={books} isAuthed={!!me} currentUserId={me} />
 }
