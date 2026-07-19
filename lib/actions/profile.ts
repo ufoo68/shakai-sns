@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { profiles, posts, follows, user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq, ne, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
@@ -9,6 +10,7 @@ import { GENRES, type ProfileView } from "@/lib/data"
 import { createNotification, removeNotification } from "@/lib/actions/notifications"
 
 async function counts(userId: string) {
+  await ensureUserStatusColumn()
   const [postRows, followingRows, followerRows] = await Promise.all([
     db
       .select({ id: posts.id })
@@ -34,6 +36,7 @@ async function counts(userId: string) {
 }
 
 export async function getProfileByHandle(handle: string): Promise<ProfileView | null> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,
@@ -56,6 +59,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
 export async function getMyProfile(): Promise<ProfileView | null> {
   const me = await getOptionalUserId()
   if (!me) return null
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,
@@ -155,6 +159,7 @@ export type SuggestedUser = {
 
 export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
   const me = await getOptionalUserId()
+  await ensureUserStatusColumn()
   const rows = await db
     .select({
       userId: profiles.userId,

@@ -2,12 +2,14 @@
 
 import { db } from "@/lib/db"
 import { books, user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "@/lib/session"
 import { BOOK_STATUSES, type BookView } from "@/lib/data"
 
 export async function getBooksByUser(userId: string): Promise<BookView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select()
     .from(books)

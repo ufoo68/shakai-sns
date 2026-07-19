@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { eq } from "drizzle-orm"
 
 export async function getSession() {
@@ -12,6 +13,7 @@ export async function getSession() {
 export async function isAdmin() {
   const session = await getSession()
   if (!session?.user) return false
+  await ensureUserStatusColumn()
   const rows = await db
     .select({ role: user.role, status: user.status })
     .from(user)
@@ -24,6 +26,7 @@ export async function isAdmin() {
 export async function requireAdmin() {
   const session = await getSession()
   if (!session?.user) throw new Error("Unauthorized")
+  await ensureUserStatusColumn()
   const rows = await db
     .select({ role: user.role, status: user.status })
     .from(user)
@@ -38,6 +41,7 @@ export async function requireAdmin() {
 export async function getUserId() {
   const session = await getSession()
   if (!session?.user) throw new Error("Unauthorized")
+  await ensureUserStatusColumn()
   const rows = await db.select({ status: user.status }).from(user).where(eq(user.id, session.user.id)).limit(1)
   if (rows[0]?.status === "frozen") throw new Error("Account frozen")
   return session.user.id
@@ -47,6 +51,7 @@ export async function getUserId() {
 export async function getOptionalUserId() {
   const session = await getSession()
   if (!session?.user) return null
+  await ensureUserStatusColumn()
   const rows = await db.select({ status: user.status }).from(user).where(eq(user.id, session.user.id)).limit(1)
   return rows[0]?.status === "frozen" ? null : session.user.id
 }

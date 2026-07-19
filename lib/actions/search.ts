@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { posts, empathies, comments, bookmarks, profiles, user, follows } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq, ilike, inArray, or } from "drizzle-orm"
 import { getOptionalUserId } from "@/lib/session"
 import { formatRelative } from "@/lib/format"
@@ -21,6 +22,7 @@ export type SearchResult = {
 export async function search(query: string): Promise<SearchResult> {
   const q = query.trim()
   if (!q) return { posts: [], users: [] }
+  await ensureUserStatusColumn()
   const like = `%${q}%`
   const me = await getOptionalUserId()
 

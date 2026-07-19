@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { posts, empathies, comments, bookmarks, profiles, user, reports, notifications } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq, inArray } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
@@ -102,6 +103,7 @@ const baseSelect = {
 }
 
 export async function getFeedPosts(limit = 50): Promise<PostView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select(baseSelect)
     .from(posts)
@@ -114,6 +116,7 @@ export async function getFeedPosts(limit = 50): Promise<PostView[]> {
 }
 
 export async function getPostsByUser(userId: string): Promise<PostView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select(baseSelect)
     .from(posts)
@@ -126,6 +129,7 @@ export async function getPostsByUser(userId: string): Promise<PostView[]> {
 
 export async function getBookmarkedPosts(): Promise<PostView[]> {
   const userId = await getUserId()
+  await ensureUserStatusColumn()
   const mine = await db.select({ postId: bookmarks.postId }).from(bookmarks).where(eq(bookmarks.userId, userId))
   const ids = mine.map((m) => m.postId)
   if (ids.length === 0) return []
