@@ -25,6 +25,7 @@ export type PostView = {
   division: string
   form: string
   title: string
+  body: string
   excerpt: string
   empathy: number
   comments: number
