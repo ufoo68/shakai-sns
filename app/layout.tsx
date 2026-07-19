@@ -16,12 +16,44 @@ const notoSansJp = Noto_Sans_JP({
   display: 'swap',
 })
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+const siteName = 'shakai'
+const title = 'shakai — 社会について考え、語り合う'
+const description =
+  'shakai は、歴史・政治・経済・社会などについて、学んだことや考えたことを共有し、多様な視点から対話するためのSNSです。'
+const socialImage = '/twitter-image'
+
 export const metadata: Metadata = {
-  title: 'shakai — 社会について考え、語り合う',
-  description:
-    'shakai は、歴史・政治・経済・社会などについて、学んだことや考えたことを共有し、多様な視点から対話するためのSNSです。',
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
   generator: 'v0.app',
   manifest: '/manifest.json',
+  applicationName: siteName,
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName,
+    title,
+    description,
+    locale: 'ja_JP',
+    images: [
+      {
+        url: socialImage,
+        width: 1200,
+        height: 630,
+        alt: 'shakai — 社会について考え、語り合う',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+    images: [socialImage],
+  },
   icons: {
     icon: [
       {
