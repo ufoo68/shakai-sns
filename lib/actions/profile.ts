@@ -10,9 +10,21 @@ import { createNotification, removeNotification } from "@/lib/actions/notificati
 
 async function counts(userId: string) {
   const [postRows, followingRows, followerRows] = await Promise.all([
-    db.select({ id: posts.id }).from(posts).where(eq(posts.userId, userId)),
-    db.select({ id: follows.id }).from(follows).where(eq(follows.userId, userId)),
-    db.select({ id: follows.id }).from(follows).where(eq(follows.followingId, userId)),
+    db
+      .select({ id: posts.id })
+      .from(posts)
+      .leftJoin(user, eq(posts.userId, user.id))
+      .where(and(eq(posts.userId, userId), eq(user.status, "active"))),
+    db
+      .select({ id: follows.id })
+      .from(follows)
+      .leftJoin(user, eq(follows.followingId, user.id))
+      .where(and(eq(follows.userId, userId), eq(user.status, "active"))),
+    db
+      .select({ id: follows.id })
+      .from(follows)
+      .leftJoin(user, eq(follows.userId, user.id))
+      .where(and(eq(follows.followingId, userId), eq(user.status, "active"))),
   ])
   return {
     postCount: postRows.length,
@@ -77,7 +89,8 @@ async function buildProfileView(row: {
     const f = await db
       .select({ id: follows.id })
       .from(follows)
-      .where(and(eq(follows.userId, me), eq(follows.followingId, row.userId)))
+      .leftJoin(user, eq(follows.userId, user.id))
+      .where(and(eq(follows.userId, me), eq(follows.followingId, row.userId), eq(user.status, "active")))
       .limit(1)
     followedByMe = f.length > 0
   }
