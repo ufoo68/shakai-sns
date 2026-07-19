@@ -66,6 +66,7 @@ async function toPostViews(
     division: r.division,
     form: r.form,
     title: r.title,
+    body: r.body,
     excerpt: excerptOf(r.body),
     empathy: empCount.get(r.id) ?? 0,
     comments: comCount.get(r.id) ?? 0,

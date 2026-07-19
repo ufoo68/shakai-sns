@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Bookmark, Heart, MessageCircle, Send } from "lucide-react"
+import { Bookmark, ChevronDown, ChevronUp, Heart, MessageCircle, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/avatar"
 import { ReportButton } from "@/components/report-button"
@@ -18,6 +18,10 @@ function Meta({ children }: { children: React.ReactNode }) {
   )
 }
 
+function isLongBody(body: string) {
+  return body.replace(/\s+/g, " ").trim().length > 120
+}
+
 export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -26,6 +30,7 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
   const [empathyCount, setEmpathyCount] = useState(post.empathy)
   const [bookmarked, setBookmarked] = useState(post.bookmarkedByMe)
   const [bookmarkCount, setBookmarkCount] = useState(post.bookmarks)
+  const [expanded, setExpanded] = useState(false)
 
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState<CommentView[] | null>(null)
@@ -93,6 +98,9 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
     })
   }
 
+  const canExpand = isLongBody(post.body)
+  const displayedBody = expanded ? post.body : post.excerpt
+
   return (
     <article className="rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/30 sm:p-6">
       {/* 著者行 */}
@@ -125,7 +133,27 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
 
       {/* 本文 */}
       <h2 className="mt-3 text-pretty text-lg font-bold leading-snug text-foreground">{post.title}</h2>
-      <p className="mt-2 whitespace-pre-line leading-relaxed text-muted-foreground">{post.excerpt}</p>
+      <p className="mt-2 whitespace-pre-line leading-relaxed text-muted-foreground">{displayedBody}</p>
+      {canExpand && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="mt-2 inline-flex items-center gap-1 rounded-full px-1 py-1 text-sm font-medium text-primary transition-colors hover:text-foreground"
+        >
+          {expanded ? (
+            <>
+              閉じる
+              <ChevronUp className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              続きを読む
+              <ChevronDown className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      )}
 
       {/* 反応 */}
       <div className="mt-4 flex items-center gap-1 border-t border-border/70 pt-3">
