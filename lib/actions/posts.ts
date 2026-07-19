@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { posts, empathies, comments, bookmarks, profiles, user } from "@/lib/db/schema"
+import { posts, empathies, comments, bookmarks, profiles, user, reports, notifications } from "@/lib/db/schema"
 import { and, desc, eq, inArray } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
@@ -127,16 +127,15 @@ export async function getBookmarkedPosts(): Promise<PostView[]> {
 }
 
 export type CreatePostResult = { ok: true } | { ok: false; error: string }
+export type UpdatePostResult = CreatePostResult
 
-export async function createPost(input: {
+function validatePostInput(input: {
   genre: string
   division: string
   form: string
   title: string
   body: string
-}): Promise<CreatePostResult> {
-  const userId = await getUserId()
-
+}): CreatePostResult & { title?: string; body?: string } {
   const title = input.title.trim()
   const body = input.body.trim()
   if (!title) return { ok: false, error: "タイトルを入力してください。" }
@@ -147,14 +146,28 @@ export async function createPost(input: {
     return { ok: false, error: "区分が不正です。" }
   if (!FORMS.includes(input.form as (typeof FORMS)[number]))
     return { ok: false, error: "形態が不正です。" }
+  return { ok: true, title, body }
+}
+
+export async function createPost(input: {
+  genre: string
+  division: string
+  form: string
+  title: string
+  body: string
+}): Promise<CreatePostResult> {
+  const userId = await getUserId()
+
+  const validated = validatePostInput(input)
+  if (!validated.ok) return validated
 
   await db.insert(posts).values({
     userId,
     genre: input.genre,
     division: input.division,
     form: input.form,
-    title,
-    body,
+    title: validated.title!,
+    body: validated.body!,
   })
 
   revalidatePath("/feed")
@@ -162,9 +175,57 @@ export async function createPost(input: {
   return { ok: true }
 }
 
-export async function deletePost(id: number) {
+export async function updatePost(
+  id: number,
+  input: {
+    genre: string
+    division: string
+    form: string
+    title: string
+    body: string
+  },
+): Promise<UpdatePostResult> {
   const userId = await getUserId()
-  await db.delete(posts).where(and(eq(posts.id, id), eq(posts.userId, userId)))
+  const validated = validatePostInput(input)
+  if (!validated.ok) return validated
+
+  await db
+    .update(posts)
+    .set({
+      genre: input.genre,
+      division: input.division,
+      form: input.form,
+      title: validated.title!,
+      body: validated.body!,
+    })
+    .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+
+  revalidatePath("/")
   revalidatePath("/feed")
   revalidatePath("/profile")
+  revalidatePath("/search")
+  return { ok: true }
+}
+
+export async function deletePost(id: number) {
+  const userId = await getUserId()
+  const mine = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+    .limit(1)
+  if (mine.length === 0) return
+
+  await db.transaction(async (tx) => {
+    await tx.delete(empathies).where(eq(empathies.postId, id))
+    await tx.delete(comments).where(eq(comments.postId, id))
+    await tx.delete(bookmarks).where(eq(bookmarks.postId, id))
+    await tx.delete(reports).where(eq(reports.postId, id))
+    await tx.delete(notifications).where(eq(notifications.postId, id))
+    await tx.delete(posts).where(and(eq(posts.id, id), eq(posts.userId, userId)))
+  })
+  revalidatePath("/")
+  revalidatePath("/feed")
+  revalidatePath("/profile")
+  revalidatePath("/search")
 }
