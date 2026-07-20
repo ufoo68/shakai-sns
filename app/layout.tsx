@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Manrope, Noto_Sans_JP } from 'next/font/google'
+import { PwaRegister } from '@/components/pwa-register'
 import './globals.css'
 
 const manrope = Manrope({
@@ -29,9 +30,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
-  generator: 'v0.app',
+  generator: 'Next.js',
+  creator: 'shakai',
+  publisher: 'shakai',
   manifest: '/manifest.json',
   applicationName: siteName,
+  appleWebApp: {
+    capable: true,
+    title: siteName,
+    statusBarStyle: 'default',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: 'website',
     url: '/',
@@ -57,16 +68,18 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
         url: '/icon.svg',
         type: 'image/svg+xml',
+      },
+      {
+        url: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
       },
     ],
     apple: '/apple-icon.png',
@@ -77,7 +90,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#ffffff',
+  viewportFit: 'cover',
+  themeColor: '#fbfcfd',
 }
 
 export default function RootLayout({
@@ -92,6 +106,7 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         {children}
+        <PwaRegister />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
