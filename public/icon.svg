@@ -1,26 +1,22 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    @media (prefers-color-scheme: light) {
-      .background { fill: black; }
-      .foreground { fill: white; }
-    }
-    @media (prefers-color-scheme: dark) {
-      .background { fill: white; }
-      .foreground { fill: black; }
-    }
-  </style>
-  <g clip-path="url(#clip0_7960_43945)">
-    <rect class="background" width="180" height="180" rx="37" />
-    <g style="transform: scale(95%); transform-origin: center">
-      <path class="foreground"
-        d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z" />
-      <path class="foreground"
-        d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z" />
-    </g>
-  </g>
-  <defs>
-    <clipPath id="clip0_7960_43945">
-      <rect width="180" height="180" fill="white" />
-    </clipPath>
-  </defs>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#FBFCFD"/>
+  <rect x="24" y="24" width="464" height="464" rx="92" fill="#EEF5F7"/>
+  <circle cx="211" cy="256" r="126" fill="#D8E8EC"/>
+  <circle cx="301" cy="256" r="126" fill="#4D8497"/>
+  <path
+    d="M211 151C153.01 151 106 198.01 106 256C106 313.99 153.01 361 211 361C268.99 361 316 313.99 316 256C316 198.01 268.99 151 211 151ZM211 196C244.137 196 271 222.863 271 256C271 289.137 244.137 316 211 316C177.863 316 151 289.137 151 256C151 222.863 177.863 196 211 196Z"
+    fill="#4D8497"
+    fill-rule="evenodd"
+    opacity="0.58"
+  />
+  <path
+    d="M301 151C243.01 151 196 198.01 196 256C196 313.99 243.01 361 301 361C358.99 361 406 313.99 406 256C406 198.01 358.99 151 301 151ZM301 196C334.137 196 361 222.863 361 256C361 289.137 334.137 316 301 316C267.863 316 241 289.137 241 256C241 222.863 267.863 196 301 196Z"
+    fill="#FBFCFD"
+    fill-rule="evenodd"
+  />
+  <path
+    d="M256 173C219.712 191.541 196 222.638 196 256C196 289.362 219.712 320.459 256 339C292.288 320.459 316 289.362 316 256C316 222.638 292.288 191.541 256 173Z"
+    fill="#2F3A45"
+    opacity="0.12"
+  />
 </svg>
