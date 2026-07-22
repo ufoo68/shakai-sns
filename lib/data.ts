@@ -52,6 +52,7 @@ export type BookView = {
   id: number
   title: string
   author: string
+  translator: string
   status: string
   note: string | null
 }
