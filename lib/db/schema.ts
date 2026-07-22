@@ -119,6 +119,7 @@ export const books = pgTable("books", {
   userId: text("userId").notNull(),
   title: text("title").notNull(),
   author: text("author").notNull(),
+  translator: text("translator").notNull().default(""),
   status: text("status").notNull().default("読んだ"),
   note: text("note"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
