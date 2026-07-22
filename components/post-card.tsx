@@ -312,12 +312,13 @@ export function PostCard({
       {/* コメント欄 */}
       {showComments && (
         <div className="mt-3 border-t border-border/70 pt-4">
-          <form onSubmit={onSubmitComment} className="flex items-start gap-2">
-            <input
+          <form onSubmit={onSubmitComment} className="flex items-end gap-2">
+            <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={isAuthed ? "建設的なコメントを添える…" : "コメントするにはログイン"}
-              className="h-10 min-w-0 flex-1 rounded-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+              rows={3}
+              className="min-h-24 min-w-0 flex-1 resize-y rounded-xl border border-border bg-background px-4 py-3 text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
             <button
               type="submit"
