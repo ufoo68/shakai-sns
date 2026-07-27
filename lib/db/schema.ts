@@ -66,6 +66,7 @@ export const profiles = pgTable("profiles", {
   bio: text("bio").notNull().default(""),
   currentThought: text("currentThought").notNull().default(""),
   interests: text("interests").array().notNull().default([]),
+  avatarUrl: text("avatarUrl"), // Vercel Blob に保存したアバター画像のURL
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
