@@ -40,6 +40,7 @@ export type ProfileView = {
   bio: string
   currentThought: string
   interests: string[]
+  avatarUrl: string | null
   postCount: number
   followingCount: number
   followerCount: number
