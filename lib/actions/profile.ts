@@ -29,6 +29,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
       bio: profiles.bio,
       currentThought: profiles.currentThought,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
