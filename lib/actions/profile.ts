@@ -52,6 +52,7 @@ export async function getMyProfile(): Promise<ProfileView | null> {
       bio: profiles.bio,
       currentThought: profiles.currentThought,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
