@@ -70,6 +70,7 @@ async function buildProfileView(row: {
   bio: string
   currentThought: string
   interests: string[]
+  avatarUrl: string | null
   name: string | null
 }): Promise<ProfileView> {
   const me = await getOptionalUserId()
