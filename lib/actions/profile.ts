@@ -91,6 +91,7 @@ async function buildProfileView(row: {
     bio: row.bio,
     currentThought: row.currentThought,
     interests: row.interests,
+    avatarUrl: row.avatarUrl,
     isMe: me === row.userId,
     followedByMe,
     ...c,
