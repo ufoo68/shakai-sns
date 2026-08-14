@@ -117,6 +117,15 @@ export async function updateProfile(input: {
   revalidatePath("/profile")
 }
 
+// アップロード済みアバターのURLを自分のプロフィールに保存する
+export async function updateAvatar(url: string) {
+  const userId = await getUserId()
+  // 想定外の値を弾く（アップロードAPIが返すBlobのhttps URLのみ許可）
+  if (!/^https:\/\/.+/.test(url)) throw new Error("Invalid avatar URL")
+  await db.update(profiles).set({ avatarUrl: url, updatedAt: new Date() }).where(eq(profiles.userId, userId))
+  revalidatePath("/profile")
+}
+
 export async function toggleFollow(targetUserId: string) {
   const userId = await getUserId()
   if (userId === targetUserId) return
