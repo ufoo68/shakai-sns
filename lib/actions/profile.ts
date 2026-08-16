@@ -150,6 +150,7 @@ export type SuggestedUser = {
   name: string
   handle: string
   interests: string[]
+  avatarUrl: string | null
   followedByMe: boolean
 }
 
@@ -160,6 +161,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
       userId: profiles.userId,
       handle: profiles.handle,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
