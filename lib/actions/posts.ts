@@ -27,6 +27,7 @@ async function toPostViews(
     createdAt: Date
     authorName: string | null
     handle: string | null
+    avatarUrl: string | null
   }[],
 ): Promise<PostView[]> {
   if (rows.length === 0) return []
@@ -73,6 +74,7 @@ async function toPostViews(
       id: r.userId,
       name: r.authorName ?? "退会したユーザー",
       handle: r.handle ?? "unknown",
+      avatarUrl: r.avatarUrl ?? null,
     },
     createdAt: formatRelative(r.createdAt),
     genre: r.genre,
@@ -100,6 +102,7 @@ const baseSelect = {
   createdAt: posts.createdAt,
   authorName: user.name,
   handle: profiles.handle,
+  avatarUrl: profiles.avatarUrl,
 }
 
 export async function getFeedPosts(limit = 50): Promise<PostView[]> {

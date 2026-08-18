@@ -13,7 +13,7 @@ function UserRow({ u }: { u: SuggestedUser }) {
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
       <Link href={`/u/${u.handle}`} className="shrink-0">
-        <Avatar name={u.name} className="h-11 w-11 text-sm" />
+        <Avatar name={u.name} src={u.avatarUrl} className="h-11 w-11 text-sm" />
       </Link>
       <div className="min-w-0 flex-1">
         <Link href={`/u/${u.handle}`} className="block truncate font-medium text-foreground hover:underline">

@@ -19,7 +19,7 @@ export type BookStatus = (typeof BOOK_STATUSES)[number]
 // フィード等で使う整形済み投稿データ
 export type PostView = {
   id: number
-  author: { id: string; name: string; handle: string }
+  author: { id: string; name: string; handle: string; avatarUrl: string | null }
   createdAt: string
   genre: string
   division: string
@@ -41,6 +41,7 @@ export type ProfileView = {
   bio: string
   currentThought: string
   interests: string[]
+  avatarUrl: string | null
   postCount: number
   followingCount: number
   followerCount: number
