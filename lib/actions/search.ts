@@ -37,6 +37,7 @@ export async function search(query: string): Promise<SearchResult> {
       createdAt: posts.createdAt,
       authorName: user.name,
       handle: profiles.handle,
+      avatarUrl: profiles.avatarUrl,
     })
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
@@ -53,6 +54,7 @@ export async function search(query: string): Promise<SearchResult> {
       userId: profiles.userId,
       handle: profiles.handle,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
@@ -71,6 +73,7 @@ export async function search(query: string): Promise<SearchResult> {
     name: r.name ?? "退会したユーザー",
     handle: r.handle,
     interests: r.interests,
+    avatarUrl: r.avatarUrl,
     followedByMe: myFollows.has(r.userId),
   }))
 
@@ -90,6 +93,7 @@ async function buildPostViews(
     createdAt: Date
     authorName: string | null
     handle: string | null
+    avatarUrl: string | null
   }[],
   me: string | null,
 ): Promise<PostView[]> {
@@ -119,7 +123,7 @@ async function buildPostViews(
 
   return rows.map((r) => ({
     id: r.id,
-    author: { id: r.userId, name: r.authorName ?? "退会したユーザー", handle: r.handle ?? "unknown" },
+    author: { id: r.userId, name: r.authorName ?? "退会したユーザー", handle: r.handle ?? "unknown", avatarUrl: r.avatarUrl ?? null },
     createdAt: formatRelative(r.createdAt),
     genre: r.genre,
     division: r.division,

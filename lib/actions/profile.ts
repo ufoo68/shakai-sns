@@ -181,6 +181,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
     name: r.name ?? "退会したユーザー",
     handle: r.handle,
     interests: r.interests,
+    avatarUrl: r.avatarUrl,
     followedByMe: myFollows.has(r.userId),
   }))
 }

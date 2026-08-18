@@ -59,7 +59,7 @@ export async function toggleBookmark(postId: number): Promise<ToggleResult> {
 
 export type CommentView = {
   id: number
-  author: { name: string; handle: string }
+  author: { name: string; handle: string; avatarUrl: string | null }
   body: string
   createdAt: string
 }
@@ -72,6 +72,7 @@ export async function getComments(postId: number): Promise<CommentView[]> {
       createdAt: comments.createdAt,
       name: user.name,
       handle: profiles.handle,
+      avatarUrl: profiles.avatarUrl,
     })
     .from(comments)
     .leftJoin(user, eq(comments.userId, user.id))
@@ -81,7 +82,7 @@ export async function getComments(postId: number): Promise<CommentView[]> {
 
   return rows.map((r) => ({
     id: r.id,
-    author: { name: r.name ?? "退会したユーザー", handle: r.handle ?? "unknown" },
+    author: { name: r.name ?? "退会したユーザー", handle: r.handle ?? "unknown", avatarUrl: r.avatarUrl ?? null },
     body: r.body,
     createdAt: formatRelative(r.createdAt),
   }))

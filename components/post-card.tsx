@@ -98,7 +98,7 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
       {/* 著者行 */}
       <div className="flex items-center gap-3">
         <Link href={`/u/${post.author.handle}`} className="shrink-0">
-          <Avatar name={post.author.name} className="h-10 w-10 text-sm" />
+          <Avatar name={post.author.name} src={post.author.avatarUrl} className="h-10 w-10 text-sm" />
         </Link>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-sm">
@@ -194,7 +194,7 @@ export function PostCard({ post, isAuthed }: { post: PostView; isAuthed: boolean
             {loadingComments && <p className="text-sm text-muted-foreground">読み込み中…</p>}
             {comments?.map((c) => (
               <div key={c.id} className="flex items-start gap-3">
-                <Avatar name={c.author.name} className="h-8 w-8 text-xs" />
+                <Avatar name={c.author.name} src={c.author.avatarUrl} className="h-8 w-8 text-xs" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 text-sm">
                     <span className="truncate font-medium text-foreground">{c.author.name}</span>
