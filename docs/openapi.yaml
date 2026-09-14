@@ -44,6 +44,65 @@ paths:
         '201': { description: Created }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /me/profile:
+    get:
+      summary: 自分のプロフィールを取得
+      responses:
+        '200': { description: Profile }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      summary: 自分のプロフィールを更新
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200': { description: Updated profile }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /profiles/{handle}:
+    get:
+      summary: プロフィールを取得
+      parameters:
+        - in: path
+          name: handle
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Profile }
+        '404': { description: Profile not found }
+  /profiles/{handle}/follow:
+    post:
+      summary: プロフィールをフォロー
+      parameters:
+        - in: path
+          name: handle
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Following state }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      summary: プロフィールのフォローを解除
+      parameters:
+        - in: path
+          name: handle
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Following state }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /profiles/suggestions:
+    get:
+      summary: おすすめプロフィールを取得
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 20, default: 3 }
+      responses:
+        '200': { description: Suggested profiles }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
     bearerAuth:
@@ -51,6 +110,14 @@ components:
       scheme: bearer
       bearerFormat: Better-Auth-session-token
   schemas:
+    ProfileInput:
+      type: object
+      properties:
+        bio: { type: string, maxLength: 400 }
+        currentThought: { type: string, maxLength: 400 }
+        interests:
+          type: array
+          items: { type: string }
     PostInput:
       type: object
       required: [genre, division, form, title, body]
