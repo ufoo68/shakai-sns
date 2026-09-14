@@ -12,7 +12,7 @@ export function ShakaiLogo({ className }: ShakaiLogoProps) {
       <img
         src="/shakai-icon.png"
         alt="shakai"
-        className="h-12 w-12 rounded-xl object-cover"
+        className="h-12 w-12 object-cover mix-blend-multiply"
       />
     </span>
   )
