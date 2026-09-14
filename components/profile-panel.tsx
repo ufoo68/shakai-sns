@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil, Sparkles, X } from "lucide-react"
+import { Camera, Pencil, Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/avatar"
 import { GENRES, type ProfileView } from "@/lib/data"
-import { toggleFollow, updateProfile } from "@/lib/actions/profile"
+import { toggleFollow, updateAvatar, updateProfile } from "@/lib/actions/profile"
 
 export function ProfilePanel({ profile, isAuthed }: { profile: ProfileView; isAuthed: boolean }) {
   const router = useRouter()
@@ -17,6 +17,32 @@ export function ProfilePanel({ profile, isAuthed }: { profile: ProfileView; isAu
   const [bio, setBio] = useState(profile.bio)
   const [thought, setThought] = useState(profile.currentThought)
   const [interests, setInterests] = useState<string[]>(profile.interests)
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl)
+  const [avatarError, setAvatarError] = useState("")
+
+  async function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarError("")
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setAvatarError("画像ファイル（5MB以下）を選択してください。")
+      return
+    }
+    startTransition(async () => {
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        const response = await fetch("/api/avatar", { method: "POST", body: formData })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error ?? "アップロードに失敗しました")
+        await updateAvatar(result.url)
+        setAvatarUrl(result.url)
+        router.refresh()
+      } catch (error) {
+        setAvatarError(error instanceof Error ? error.message : "アップロードに失敗しました")
+      }
+    })
+  }
 
   function onFollow() {
     if (!isAuthed) {
@@ -47,7 +73,7 @@ export function ProfilePanel({ profile, isAuthed }: { profile: ProfileView; isAu
       {/* プロフィールヘッダー */}
       <section className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-start gap-4">
-          <Avatar name={profile.name} className="h-16 w-16 text-xl" />
+          <Avatar name={profile.name} src={profile.avatarUrl} className="h-16 w-16 text-xl" />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl font-bold tracking-tight">{profile.name}</h1>
             <p className="text-sm text-muted-foreground">@{profile.handle}</p>
@@ -152,6 +178,18 @@ export function ProfilePanel({ profile, isAuthed }: { profile: ProfileView; isAu
             </div>
 
             <form onSubmit={onSave} className="mt-4 flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <Avatar name={profile.name} src={avatarUrl} className="h-16 w-16 text-xl" />
+                <div>
+                  <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                    <Camera className="h-4 w-4" />
+                    アバターを変更
+                    <input type="file" accept="image/*" onChange={onAvatarChange} className="sr-only" />
+                  </label>
+                  <p className="mt-1 text-xs text-muted-foreground">JPG・PNG・GIF、5MB以下</p>
+                  {avatarError && <p className="mt-1 text-xs text-destructive" role="alert">{avatarError}</p>}
+                </div>
+              </div>
               <label className="flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">自己紹介</span>
                 <textarea
