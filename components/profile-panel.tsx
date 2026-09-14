@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState, useTransition } from "react"
+import { mutate } from "swr"
 import { useRouter } from "next/navigation"
 import { Camera, Newspaper, Pencil, Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -38,6 +39,7 @@ export function ProfilePanel({ profile, isAuthed }: { profile: ProfileView; isAu
         if (!response.ok) throw new Error(result.error ?? "アップロードに失敗しました")
         await updateAvatar(result.url)
         setAvatarUrl(result.url)
+        await mutate("/api/avatar", { avatarUrl: result.url }, false)
         router.refresh()
       } catch (error) {
         setAvatarError(error instanceof Error ? error.message : "アップロードに失敗しました")
