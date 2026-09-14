@@ -53,8 +53,7 @@ export default async function Page() {
       <section className="mx-auto max-w-3xl px-4 pb-8 pt-16 text-center sm:px-6 sm:pt-24">
         <ShakaiLogo
           className="justify-center"
-          imageClassName="h-24 w-24 sm:h-28 sm:w-28"
-          cropFrame
+          imageClassName="h-32 w-32 sm:h-36 sm:w-36"
         />
         <h1 className="mt-8 text-balance font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
           社会について考え、語り合う
