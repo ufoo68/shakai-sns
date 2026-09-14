@@ -19,6 +19,13 @@ Authorization: Bearer <session-token>
 | GET | `/api/v1/me` | 認証中ユーザーを取得 |
 | GET | `/api/v1/posts?limit=20&offset=0` | 公開投稿一覧を取得 |
 | POST | `/api/v1/posts` | 投稿を作成 |
+| GET | `/api/v1/me/profile` | 自分のプロフィールを取得 |
+| PATCH | `/api/v1/me/profile` | 自分のプロフィールを更新 |
+| GET | `/api/v1/profiles/:handle` | ハンドルからプロフィールを取得 |
+| GET | `/api/v1/profiles/:handle/follow` | 未使用（フォロー状態はプロフィールに含む） |
+| POST | `/api/v1/profiles/:handle/follow` | プロフィールをフォロー |
+| DELETE | `/api/v1/profiles/:handle/follow` | プロフィールのフォローを解除 |
+| GET | `/api/v1/profiles/suggestions` | おすすめプロフィールを取得 |
 
 投稿作成のJSON:
 
@@ -40,4 +47,21 @@ Authorization: Bearer <session-token>
 { "error": { "code": "UNAUTHORIZED", "message": "..." } }
 ```
 
-`limit`は1〜50、`offset`は0以上です。許可オリジンは`API_CORS_ORIGINS`にカンマ区切りで設定してください。未設定時はCORSを許可しません。
+`limit`は1〜50、`offset`は0以上です。プロフィール候補の`limit`は1〜20です。プロフィール更新のJSONは次のいずれかを含めます。
+
+```json
+{
+  "bio": "自己紹介",
+  "currentThought": "最近考えていること",
+  "interests": ["思想", "文学"]
+}
+```
+
+フォロー操作は次の形式です。
+
+```http
+POST /api/v1/profiles/:handle/follow
+DELETE /api/v1/profiles/:handle/follow
+```
+
+許可オリジンは`API_CORS_ORIGINS`にカンマ区切りで設定してください。未設定時はCORSを許可しません。
