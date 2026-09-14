@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, Flag, MessageSquare, FileText } from "lucide-react"
+import { ArrowLeft, LayoutDashboard, Users, Flag, MessageSquare, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const ITEMS = [
@@ -18,6 +18,14 @@ export function AdminNav() {
 
   return (
     <nav className="flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <Link
+        href="/feed"
+        className="inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:mb-2 lg:rounded-xl"
+      >
+        <ArrowLeft className="h-4 w-4 shrink-0" />
+        フィードへ
+      </Link>
+      <span className="hidden h-px bg-border lg:mb-2 lg:block" />
       {ITEMS.map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
         const Icon = item.icon

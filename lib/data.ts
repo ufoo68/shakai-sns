@@ -25,6 +25,7 @@ export type PostView = {
   division: string
   form: string
   title: string
+  body: string
   excerpt: string
   empathy: number
   comments: number
@@ -52,6 +53,7 @@ export type BookView = {
   id: number
   title: string
   author: string
+  translator: string
   status: string
   note: string | null
 }
@@ -72,6 +74,7 @@ export type AdminUserView = {
   email: string
   handle: string
   role: string
+  status: string
   postCount: number
   createdAt: string
   isMe: boolean

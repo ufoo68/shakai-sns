@@ -1,7 +1,8 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { posts, empathies, comments, bookmarks, profiles, user } from "@/lib/db/schema"
+import { posts, empathies, comments, bookmarks, profiles, user, reports, notifications } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { and, desc, eq, inArray } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getUserId, getOptionalUserId } from "@/lib/session"
@@ -34,9 +35,21 @@ async function toPostViews(
   const ids = rows.map((r) => r.id)
 
   const [emp, com, bmk] = await Promise.all([
-    db.select({ postId: empathies.postId, userId: empathies.userId }).from(empathies).where(inArray(empathies.postId, ids)),
-    db.select({ postId: comments.postId }).from(comments).where(inArray(comments.postId, ids)),
-    db.select({ postId: bookmarks.postId, userId: bookmarks.userId }).from(bookmarks).where(inArray(bookmarks.postId, ids)),
+    db
+      .select({ postId: empathies.postId, userId: empathies.userId })
+      .from(empathies)
+      .leftJoin(user, eq(empathies.userId, user.id))
+      .where(and(inArray(empathies.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: comments.postId })
+      .from(comments)
+      .leftJoin(user, eq(comments.userId, user.id))
+      .where(and(inArray(comments.postId, ids), eq(user.status, "active"))),
+    db
+      .select({ postId: bookmarks.postId, userId: bookmarks.userId })
+      .from(bookmarks)
+      .leftJoin(user, eq(bookmarks.userId, user.id))
+      .where(and(inArray(bookmarks.postId, ids), eq(user.status, "active"))),
   ])
 
   const empCount = new Map<number, number>()
@@ -68,6 +81,7 @@ async function toPostViews(
     division: r.division,
     form: r.form,
     title: r.title,
+    body: r.body,
     excerpt: excerptOf(r.body),
     empathy: empCount.get(r.id) ?? 0,
     comments: comCount.get(r.id) ?? 0,
@@ -92,29 +106,33 @@ const baseSelect = {
 }
 
 export async function getFeedPosts(limit = 50): Promise<PostView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select(baseSelect)
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
+    .where(eq(user.status, "active"))
     .orderBy(desc(posts.createdAt))
     .limit(limit)
   return toPostViews(rows)
 }
 
 export async function getPostsByUser(userId: string): Promise<PostView[]> {
+  await ensureUserStatusColumn()
   const rows = await db
     .select(baseSelect)
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
-    .where(eq(posts.userId, userId))
+    .where(and(eq(posts.userId, userId), eq(user.status, "active")))
     .orderBy(desc(posts.createdAt))
   return toPostViews(rows)
 }
 
 export async function getBookmarkedPosts(): Promise<PostView[]> {
   const userId = await getUserId()
+  await ensureUserStatusColumn()
   const mine = await db.select({ postId: bookmarks.postId }).from(bookmarks).where(eq(bookmarks.userId, userId))
   const ids = mine.map((m) => m.postId)
   if (ids.length === 0) return []
@@ -123,22 +141,21 @@ export async function getBookmarkedPosts(): Promise<PostView[]> {
     .from(posts)
     .leftJoin(user, eq(posts.userId, user.id))
     .leftJoin(profiles, eq(posts.userId, profiles.userId))
-    .where(inArray(posts.id, ids))
+    .where(and(inArray(posts.id, ids), eq(user.status, "active")))
     .orderBy(desc(posts.createdAt))
   return toPostViews(rows)
 }
 
 export type CreatePostResult = { ok: true } | { ok: false; error: string }
+export type UpdatePostResult = CreatePostResult
 
-export async function createPost(input: {
+function validatePostInput(input: {
   genre: string
   division: string
   form: string
   title: string
   body: string
-}): Promise<CreatePostResult> {
-  const userId = await getUserId()
-
+}): CreatePostResult & { title?: string; body?: string } {
   const title = input.title.trim()
   const body = input.body.trim()
   if (!title) return { ok: false, error: "タイトルを入力してください。" }
@@ -149,14 +166,28 @@ export async function createPost(input: {
     return { ok: false, error: "区分が不正です。" }
   if (!FORMS.includes(input.form as (typeof FORMS)[number]))
     return { ok: false, error: "形態が不正です。" }
+  return { ok: true, title, body }
+}
+
+export async function createPost(input: {
+  genre: string
+  division: string
+  form: string
+  title: string
+  body: string
+}): Promise<CreatePostResult> {
+  const userId = await getUserId()
+
+  const validated = validatePostInput(input)
+  if (!validated.ok) return validated
 
   await db.insert(posts).values({
     userId,
     genre: input.genre,
     division: input.division,
     form: input.form,
-    title,
-    body,
+    title: validated.title!,
+    body: validated.body!,
   })
 
   revalidatePath("/feed")
@@ -164,9 +195,57 @@ export async function createPost(input: {
   return { ok: true }
 }
 
-export async function deletePost(id: number) {
+export async function updatePost(
+  id: number,
+  input: {
+    genre: string
+    division: string
+    form: string
+    title: string
+    body: string
+  },
+): Promise<UpdatePostResult> {
   const userId = await getUserId()
-  await db.delete(posts).where(and(eq(posts.id, id), eq(posts.userId, userId)))
+  const validated = validatePostInput(input)
+  if (!validated.ok) return validated
+
+  await db
+    .update(posts)
+    .set({
+      genre: input.genre,
+      division: input.division,
+      form: input.form,
+      title: validated.title!,
+      body: validated.body!,
+    })
+    .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+
+  revalidatePath("/")
   revalidatePath("/feed")
   revalidatePath("/profile")
+  revalidatePath("/search")
+  return { ok: true }
+}
+
+export async function deletePost(id: number) {
+  const userId = await getUserId()
+  const mine = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+    .limit(1)
+  if (mine.length === 0) return
+
+  await db.transaction(async (tx) => {
+    await tx.delete(empathies).where(eq(empathies.postId, id))
+    await tx.delete(comments).where(eq(comments.postId, id))
+    await tx.delete(bookmarks).where(eq(bookmarks.postId, id))
+    await tx.delete(reports).where(eq(reports.postId, id))
+    await tx.delete(notifications).where(eq(notifications.postId, id))
+    await tx.delete(posts).where(and(eq(posts.id, id), eq(posts.userId, userId)))
+  })
+  revalidatePath("/")
+  revalidatePath("/feed")
+  revalidatePath("/profile")
+  revalidatePath("/search")
 }

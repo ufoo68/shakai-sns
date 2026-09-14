@@ -10,11 +10,13 @@ export function ProfileScreen({
   posts,
   books,
   isAuthed,
+  currentUserId = null,
 }: {
   profile: ProfileView
   posts: PostView[]
   books: BookView[]
   isAuthed: boolean
+  currentUserId?: string | null
 }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -45,7 +47,7 @@ export function ProfileScreen({
           </div>
           <div className="mt-3 flex flex-col gap-4">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} isAuthed={isAuthed} />
+              <PostCard key={post.id} post={post} isAuthed={isAuthed} currentUserId={currentUserId} />
             ))}
             {posts.length === 0 && (
               <p className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">

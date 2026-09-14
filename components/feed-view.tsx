@@ -7,7 +7,15 @@ import { GENRES, type PostView } from "@/lib/data"
 
 const FILTERS = ["すべて", ...GENRES] as const
 
-export function FeedView({ posts, isAuthed }: { posts: PostView[]; isAuthed: boolean }) {
+export function FeedView({
+  posts,
+  isAuthed,
+  currentUserId = null,
+}: {
+  posts: PostView[]
+  isAuthed: boolean
+  currentUserId?: string | null
+}) {
   const [active, setActive] = useState<(typeof FILTERS)[number]>("すべて")
 
   const filtered = active === "すべて" ? posts : posts.filter((p) => p.genre === active)
@@ -37,7 +45,7 @@ export function FeedView({ posts, isAuthed }: { posts: PostView[]; isAuthed: boo
 
       <div className="mt-4 flex flex-col gap-4">
         {filtered.map((post) => (
-          <PostCard key={post.id} post={post} isAuthed={isAuthed} />
+          <PostCard key={post.id} post={post} isAuthed={isAuthed} currentUserId={currentUserId} />
         ))}
         {filtered.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
+import { ensureUserStatusColumn } from "@/lib/db/ensure-user-status"
 import { eq } from "drizzle-orm"
 
 export async function getSession() {
@@ -12,15 +13,26 @@ export async function getSession() {
 export async function isAdmin() {
   const session = await getSession()
   if (!session?.user) return false
-  const rows = await db.select({ role: user.role }).from(user).where(eq(user.id, session.user.id)).limit(1)
-  return rows[0]?.role === "admin"
+  await ensureUserStatusColumn()
+  const rows = await db
+    .select({ role: user.role, status: user.status })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1)
+  return rows[0]?.role === "admin" && rows[0]?.status !== "frozen"
 }
 
 // 管理者専用の操作で使用。管理者でなければ例外を投げる。
 export async function requireAdmin() {
   const session = await getSession()
   if (!session?.user) throw new Error("Unauthorized")
-  const rows = await db.select({ role: user.role }).from(user).where(eq(user.id, session.user.id)).limit(1)
+  await ensureUserStatusColumn()
+  const rows = await db
+    .select({ role: user.role, status: user.status })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1)
+  if (rows[0]?.status === "frozen") throw new Error("Account frozen")
   if (rows[0]?.role !== "admin") throw new Error("Forbidden")
   return session.user.id
 }
@@ -29,11 +41,17 @@ export async function requireAdmin() {
 export async function getUserId() {
   const session = await getSession()
   if (!session?.user) throw new Error("Unauthorized")
+  await ensureUserStatusColumn()
+  const rows = await db.select({ status: user.status }).from(user).where(eq(user.id, session.user.id)).limit(1)
+  if (rows[0]?.status === "frozen") throw new Error("Account frozen")
   return session.user.id
 }
 
 // 公開ページで「自分の状態」を反映するために使用。未ログインなら null。
 export async function getOptionalUserId() {
   const session = await getSession()
-  return session?.user?.id ?? null
+  if (!session?.user) return null
+  await ensureUserStatusColumn()
+  const rows = await db.select({ status: user.status }).from(user).where(eq(user.id, session.user.id)).limit(1)
+  return rows[0]?.status === "frozen" ? null : session.user.id
 }

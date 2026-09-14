@@ -115,7 +115,7 @@ export default async function Page() {
           </div>
           <div className="flex flex-col gap-4">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} isAuthed={isAuthed} />
+              <PostCard key={post.id} post={post} isAuthed={isAuthed} currentUserId={me} />
             ))}
           </div>
           <div className="mt-8 text-center">

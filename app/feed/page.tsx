@@ -31,7 +31,7 @@ export default async function FeedPage() {
             <PostComposer isAuthed={isAuthed} variant="block" />
           </div>
 
-          <FeedView posts={posts} isAuthed={isAuthed} />
+          <FeedView posts={posts} isAuthed={isAuthed} currentUserId={me} />
         </div>
 
         {/* サイドバー (デスクトップ) */}

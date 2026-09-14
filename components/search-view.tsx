@@ -28,7 +28,13 @@ function UserRow({ u }: { u: SuggestedUser }) {
   )
 }
 
-export function SearchView({ isAuthed }: { isAuthed: boolean }) {
+export function SearchView({
+  isAuthed,
+  currentUserId = null,
+}: {
+  isAuthed: boolean
+  currentUserId?: string | null
+}) {
   const router = useRouter()
   const params = useSearchParams()
   const initial = params.get("q") ?? ""
@@ -140,7 +146,7 @@ export function SearchView({ isAuthed }: { isAuthed: boolean }) {
             <h2 className="mb-3 text-sm font-bold text-foreground">投稿（{postCount}）</h2>
             <div className="flex flex-col gap-4">
               {result.posts.map((p) => (
-                <PostCard key={p.id} post={p} isAuthed={isAuthed} />
+                <PostCard key={p.id} post={p} isAuthed={isAuthed} currentUserId={currentUserId} />
               ))}
             </div>
           </section>
