@@ -82,7 +82,12 @@ export const metadata: Metadata = {
         type: 'image/png',
       },
     ],
-    apple: '/shakai-icon.png',
+    apple: [
+      {
+        url: '/shakai-icon.png',
+        type: 'image/png',
+      },
+    ],
   },
 }
 
