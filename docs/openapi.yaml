@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Shakai Public API
+  version: 1.0.0
+  description: 外部クライアント向けのバージョン付きREST API
+servers:
+  - url: https://{host}/api/v1
+    variables:
+      host:
+        default: example.com
+security:
+  - bearerAuth: []
+paths:
+  /me:
+    get:
+      summary: 現在のユーザーを取得
+      responses:
+        '200':
+          description: User
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /posts:
+    get:
+      summary: 投稿一覧を取得
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200': { description: Feed items }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: 投稿を作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInput'
+      responses:
+        '201': { description: Created }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Better-Auth-session-token
+  schemas:
+    PostInput:
+      type: object
+      required: [genre, division, form, title, body]
+      properties:
+        genre: { type: string }
+        division: { type: string }
+        form: { type: string }
+        title: { type: string }
+        body: { type: string }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
