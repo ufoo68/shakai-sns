@@ -50,7 +50,7 @@ export function FollowSuggestions({ users, isAuthed }: { users: SuggestedUser[];
         {users.map((u) => (
           <li key={u.userId} className="flex items-center gap-3">
             <Link href={`/u/${u.handle}`} className="shrink-0">
-              <Avatar name={u.name} className="h-9 w-9 text-xs" />
+              <Avatar name={u.name} src={u.avatarUrl} className="h-9 w-9 text-xs" />
             </Link>
             <div className="min-w-0 flex-1">
               <Link href={`/u/${u.handle}`} className="block truncate text-sm font-medium text-foreground hover:underline">

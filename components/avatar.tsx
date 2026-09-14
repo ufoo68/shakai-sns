@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils"
 
 type AvatarProps = {
   name: string
+  src?: string | null
   className?: string
 }
 
@@ -26,7 +27,17 @@ function initials(name: string) {
   return trimmed[0] ?? "?"
 }
 
-export function Avatar({ name, className }: AvatarProps) {
+export function Avatar({ name, src, className }: AvatarProps) {
+  if (src) {
+    return (
+      <img
+        src={src || "/placeholder.svg"}
+        alt={`${name}のアバター`}
+        className={cn("inline-block shrink-0 select-none rounded-full object-cover", className)}
+      />
+    )
+  }
+
   const tint = TINTS[name.charCodeAt(0) % TINTS.length]
   return (
     <span

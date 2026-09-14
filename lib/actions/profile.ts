@@ -44,6 +44,7 @@ export async function getProfileByHandle(handle: string): Promise<ProfileView | 
       bio: profiles.bio,
       currentThought: profiles.currentThought,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
@@ -67,6 +68,7 @@ export async function getMyProfile(): Promise<ProfileView | null> {
       bio: profiles.bio,
       currentThought: profiles.currentThought,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
@@ -84,6 +86,7 @@ async function buildProfileView(row: {
   bio: string
   currentThought: string
   interests: string[]
+  avatarUrl: string | null
   name: string | null
 }): Promise<ProfileView> {
   const me = await getOptionalUserId()
@@ -105,6 +108,7 @@ async function buildProfileView(row: {
     bio: row.bio,
     currentThought: row.currentThought,
     interests: row.interests,
+    avatarUrl: row.avatarUrl,
     isMe: me === row.userId,
     followedByMe,
     ...c,
@@ -127,6 +131,15 @@ export async function updateProfile(input: {
       updatedAt: new Date(),
     })
     .where(eq(profiles.userId, userId))
+  revalidatePath("/profile")
+}
+
+// アップロード済みアバターのURLを自分のプロフィールに保存する
+export async function updateAvatar(url: string) {
+  const userId = await getUserId()
+  // 想定外の値を弾く（アップロードAPIが返すBlobのhttps URLのみ許可）
+  if (!/^https:\/\/.+/.test(url)) throw new Error("Invalid avatar URL")
+  await db.update(profiles).set({ avatarUrl: url, updatedAt: new Date() }).where(eq(profiles.userId, userId))
   revalidatePath("/profile")
 }
 
@@ -154,6 +167,7 @@ export type SuggestedUser = {
   name: string
   handle: string
   interests: string[]
+  avatarUrl: string | null
   followedByMe: boolean
 }
 
@@ -165,6 +179,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
       userId: profiles.userId,
       handle: profiles.handle,
       interests: profiles.interests,
+      avatarUrl: profiles.avatarUrl,
       name: user.name,
     })
     .from(profiles)
@@ -184,6 +199,7 @@ export async function getSuggestedUsers(limit = 3): Promise<SuggestedUser[]> {
     name: r.name ?? "退会したユーザー",
     handle: r.handle,
     interests: r.interests,
+    avatarUrl: r.avatarUrl,
     followedByMe: myFollows.has(r.userId),
   }))
 }
