@@ -68,21 +68,21 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
+        url: '/shakai-icon.png',
+        type: 'image/png',
       },
       {
-        url: '/icon-192.png',
+        url: '/shakai-icon.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        url: '/icon-512.png',
+        url: '/shakai-icon.png',
         sizes: '512x512',
         type: 'image/png',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/shakai-icon.png',
   },
 }
 
