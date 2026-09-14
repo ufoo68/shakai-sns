@@ -54,7 +54,6 @@ export default async function Page() {
         <ShakaiLogo
           className="justify-center"
           imageClassName="h-24 w-24 sm:h-28 sm:w-28"
-          cropFrame
         />
         <h1 className="mt-8 text-balance font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
           社会について考え、語り合う
