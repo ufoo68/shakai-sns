@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
+import useSWR from "swr"
 import { LogOut, Search, Shield, LifeBuoy, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ShakaiLogo } from "@/components/shakai-logo"
@@ -11,6 +12,8 @@ import { NotificationBell } from "@/components/notification-bell"
 import { Avatar } from "@/components/avatar"
 import { authClient } from "@/lib/auth-client"
 import { getMyIsAdmin } from "@/lib/actions/account"
+
+const fetcher = (url: string) => fetch(url).then((response) => response.json())
 
 const NAV = [
   { href: "/feed", label: "フィード" },
@@ -22,6 +25,7 @@ export function SiteHeader() {
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const isAuthed = !!session?.user
+  const { data: avatarData } = useSWR<{ avatarUrl: string | null }>(isAuthed ? "/api/avatar" : null, fetcher)
   const [menuOpen, setMenuOpen] = useState(false)
   const [admin, setAdmin] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -106,7 +110,7 @@ export function SiteHeader() {
                 aria-label="アカウントメニュー"
                 className="flex items-center rounded-full"
               >
-                <Avatar name={session.user.name} className="h-9 w-9 text-xs" />
+                <Avatar name={session.user.name} src={avatarData?.avatarUrl} className="h-9 w-9 text-xs" />
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-12 w-52 overflow-hidden rounded-2xl border border-border bg-card p-1.5 shadow-lg">

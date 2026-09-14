@@ -1,6 +1,22 @@
 import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
+import { eq } from "drizzle-orm"
 import { getSession } from "@/lib/session"
+import { db } from "@/lib/db"
+import { profiles } from "@/lib/db/schema"
+
+export async function GET() {
+  const session = await getSession()
+  if (!session?.user) return NextResponse.json({ avatarUrl: null }, { status: 401 })
+
+  const [profile] = await db
+    .select({ avatarUrl: profiles.avatarUrl })
+    .from(profiles)
+    .where(eq(profiles.userId, session.user.id))
+    .limit(1)
+
+  return NextResponse.json({ avatarUrl: profile?.avatarUrl ?? null })
+}
 
 const MAX_BYTES = 4 * 1024 * 1024 // 4MB
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"]
