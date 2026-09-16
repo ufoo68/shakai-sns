@@ -57,35 +57,35 @@ export function InquiryForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5">
+    <form onSubmit={onSubmit} className="flex min-w-0 flex-col gap-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className="text-sm font-medium text-foreground">お名前</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="お名前"
-            className="h-11 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+            className="box-border h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
           />
         </label>
-        <label className="flex flex-col gap-1.5">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className="text-sm font-medium text-foreground">メールアドレス</span>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="h-11 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+            className="box-border h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
           />
         </label>
       </div>
 
-      <label className="flex flex-col gap-1.5">
+      <label className="flex min-w-0 flex-col gap-1.5">
         <span className="text-sm font-medium text-foreground">種類</span>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="h-11 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none focus:border-primary"
+          className="box-border h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3.5 text-base text-foreground outline-none focus:border-primary"
         >
           {INQUIRY_CATEGORIES.map((c) => (
             <option key={c} value={c}>
@@ -95,14 +95,14 @@ export function InquiryForm({
         </select>
       </label>
 
-      <label className="flex flex-col gap-1.5">
+      <label className="flex min-w-0 flex-col gap-1.5">
         <span className="text-sm font-medium text-foreground">内容</span>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           placeholder="お困りのことやご要望を、落ち着いてお書きください。"
-          className="resize-none rounded-xl border border-border bg-background px-3.5 py-2.5 text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+          className="box-border w-full min-w-0 resize-none rounded-xl border border-border bg-background px-3.5 py-2.5 text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
         />
       </label>
 
