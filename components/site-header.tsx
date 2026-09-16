@@ -127,12 +127,26 @@ export function SiteHeader() {
                     プロフィール
                   </Link>
                   <Link
-                    href="/contact"
+                    href="/support"
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
                   >
                     <LifeBuoy className="h-4 w-4" />
-                    お問い合わせ
+                    サポート
+                  </Link>
+                  <Link
+                    href="/terms"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    利用規約
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    プライバシーポリシー
                   </Link>
                   {admin && (
                     <>
