@@ -26,6 +26,11 @@ Authorization: Bearer <session-token>
 | POST | `/api/v1/profiles/:handle/follow` | プロフィールをフォロー |
 | DELETE | `/api/v1/profiles/:handle/follow` | プロフィールのフォローを解除 |
 | GET | `/api/v1/profiles/suggestions` | おすすめプロフィールを取得 |
+| POST | `/api/v1/me/avatar` | 自分のアバター画像を更新 |
+| GET | `/api/v1/me/books?limit=20&offset=0&status=読んだ` | 自分の本棚を取得 |
+| POST | `/api/v1/me/books` | 本を追加 |
+| PATCH | `/api/v1/me/books/:id` | 本を編集 |
+| DELETE | `/api/v1/me/books/:id` | 本を削除 |
 
 投稿作成のJSON:
 
@@ -65,3 +70,23 @@ DELETE /api/v1/profiles/:handle/follow
 ```
 
 許可オリジンは`API_CORS_ORIGINS`にカンマ区切りで設定してください。未設定時はCORSを許可しません。
+
+## アバター更新
+
+`POST /api/v1/me/avatar` は `multipart/form-data` を使用し、`file` フィールドにJPEG、PNG、またはWebP画像を送信します。最大サイズは5MBです。成功時は公開Blob URLを返します。
+
+## 本棚
+
+本の追加・編集では次のJSONを送信します。`status` は `読んだ`、`読んでいる`、`読みたい` のいずれかです。
+
+```json
+{
+  "title": "本のタイトル",
+  "author": "著者名",
+  "translator": "翻訳者名",
+  "status": "読んだ",
+  "note": "メモ"
+}
+```
+
+本棚一覧は `limit`（1〜50）、`offset`（0以上）、`status` で絞り込めます。すべての本棚操作は認証ユーザー自身のデータに限定されます。

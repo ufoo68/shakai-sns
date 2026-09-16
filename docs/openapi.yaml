@@ -103,6 +103,80 @@ paths:
       responses:
         '200': { description: Suggested profiles }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /me/avatar:
+    post:
+      summary: 自分のアバター画像を更新
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200': { description: Updated avatar URL }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413': { description: File too large }
+        '415': { description: Unsupported image type }
+  /me/books:
+    get:
+      summary: 自分の本棚を取得
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: status
+          schema: { type: string, enum: [読んだ, 読んでいる, 読みたい] }
+      responses:
+        '200': { description: Books owned by the current user }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: 本を追加
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookInput' }
+      responses:
+        '201': { description: Created book }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /me/books/{id}:
+    patch:
+      summary: 本を編集
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookInput' }
+      responses:
+        '200': { description: Updated book }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Book not found }
+    delete:
+      summary: 本を削除
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Deleted book }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Book not found }
 components:
   securitySchemes:
     bearerAuth:
@@ -127,6 +201,15 @@ components:
         form: { type: string }
         title: { type: string }
         body: { type: string }
+    BookInput:
+      type: object
+      required: [title, status]
+      properties:
+        title: { type: string, maxLength: 200 }
+        author: { type: string, maxLength: 200 }
+        translator: { type: string, maxLength: 200 }
+        status: { type: string, enum: [読んだ, 読んでいる, 読みたい] }
+        note: { type: string, maxLength: 2000, nullable: true }
     Error:
       type: object
       properties:
